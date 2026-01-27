@@ -1,0 +1,30 @@
+{
+  "name": "adaptive_mock_test_engine",
+  "version": "1.0.0",
+  "description": "mock_test_engine",
+  "keywords": [
+    "nodejs"
+  ],
+  "license": "ISC",
+  "author": "Peehal",
+  "type": "commonjs",
+  "main": "index.js",
+ "scripts": {
+  "test": "echo \"Error: no test specified\" && exit 1",
+  "start": "node src/app.js",
+  "dev": "nodemon src/app.js"
+}
+,
+  "dependencies": {
+    "@langchain/community": "^1.1.8",
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "langchain": "^1.2.14",
+    "mongoose": "^9.1.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
+}
