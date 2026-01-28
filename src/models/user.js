@@ -1,4 +1,6 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 const userSchema = new mongoose.Schema({
     name:{
@@ -18,8 +20,10 @@ const userSchema = new mongoose.Schema({
     }, 
     role:{
         type:String, 
-        enum:["student", "Admin"],
+        enum:["student", "faculty"],
     }, 
+
+    // For fututre use 
 
     totalTestGiven:{
         type:Number, 
@@ -36,7 +40,32 @@ const userSchema = new mongoose.Schema({
 
 },{
     timestamps:true,
-})
+});
+
+
+userSchema.pre("save", async function () {
+
+    if (!this.isModified("password")) return;
+
+    this.password = await bcrypt.hash(this.password, 12);
+});
+
+
+userSchema.methods.comparePassword = function(enteredpassword){
+
+    return bcrypt.compare(enteredpassword, this.password)
+
+};
+
+userSchema.methods.getJwt = async function () {
+    return jwt.sign({
+        id:this._id,
+        role: this.role
+    },
+    process.env.JWT_SECRET,
+);
+};
+
 
 module.exports = mongoose.model( "User", userSchema);
 
