@@ -66,10 +66,15 @@ exports.login = async ( req, res) =>{
  
         const token = await user.getJwt();
 
+        res.cookie("token", token, {
+            httpOnly: true,   
+            sameSite: "strict",
+        });
+
         return res.status(200).json({
             success: true,
             message:"User is successfully logged In"
-    })
+    });
 } catch (error) {
         return res.status(500).json({
             success:false,
