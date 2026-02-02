@@ -13,6 +13,7 @@ const getProfile = require("./routes/userrouter");
 const updateProfile = require("./routes/userrouter");
 const updatePassword = require("./routes/userrouter");
 const logout = require("./routes/userrouter");
+const topicRouter = require("./routes/topicroutes");
 
 
 
@@ -21,6 +22,7 @@ app.use("/", getProfile);
 app.use("/", updateProfile);
 app.use("/", updatePassword);
 app.use("/", logout);
+app.use("/", topicRouter);
 
 
 
