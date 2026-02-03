@@ -13,8 +13,8 @@ const getProfile = require("./routes/userrouter");
 const updateProfile = require("./routes/userrouter");
 const updatePassword = require("./routes/userrouter");
 const logout = require("./routes/userrouter");
-const topicRouter = require("./routes/topicroutes");
-
+const topic = require("./routes/topicroutes");
+const getalltopic =require("./routes/topicroutes");
 
 
 app.use("/", authRouter);
@@ -22,7 +22,8 @@ app.use("/", getProfile);
 app.use("/", updateProfile);
 app.use("/", updatePassword);
 app.use("/", logout);
-app.use("/", topicRouter);
+app.use("/", topic);
+app.use("/", getalltopic);
 
 
 

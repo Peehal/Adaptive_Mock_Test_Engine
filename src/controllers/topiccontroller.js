@@ -34,3 +34,19 @@ exports.createTopic = async(req, res) =>{
         });
     }
 };
+
+exports.getAllTopic = async(req, res) =>{
+    try {
+        
+        const topics = await Topic.find({
+            userId:req.user.id,
+        });
+
+        res.status(200).json(topics)
+    } catch (error) {
+        res.status(500).json({
+            message:error.message,
+        });
+    }
+};
+
