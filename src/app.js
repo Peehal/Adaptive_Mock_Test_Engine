@@ -16,6 +16,7 @@ const logout = require("./routes/userrouter");
 const topic = require("./routes/topicroutes");
 const getalltopic =require("./routes/topicroutes");
 const updateTopic =require("./routes/topicroutes");
+const deleteTopic =require("./routes/topicroutes");
 
 
 app.use("/", authRouter);
@@ -26,6 +27,7 @@ app.use("/", logout);
 app.use("/", topic);
 app.use("/", getalltopic);
 app.use("/", updateTopic);
+app.use("/", deleteTopic);
 
 
 

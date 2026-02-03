@@ -89,3 +89,28 @@ exports.updateTopic = async(req, res) => {
     }
 
 }
+
+exports.deleteTopic = async(req, res) =>{
+    
+    const {topicId, subjectName} = req.body;
+    
+    if(!topicId){
+        return res.status(400).json({
+            message:"topicId is required",
+        })
+    }
+
+    const topic = await Topic.findOneAndDelete({
+        _id:topicId,
+        userId:req.user.id,
+    });
+
+    if (!topic) {
+        return res.status(404).json({ message: "Topic not found" });
+    }
+
+    res.json({
+        message:"Topic deleted successfully"
+    })
+};
+
