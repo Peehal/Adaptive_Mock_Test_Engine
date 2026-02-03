@@ -50,3 +50,42 @@ exports.getAllTopic = async(req, res) =>{
     }
 };
 
+exports.updateTopic = async(req, res) => {
+
+    try {
+        
+        const {topicId, subjectName, subTopics, difficultyLevel } = req.body;
+        if (!topicId){
+            return res.status(400).json({
+                success:false,
+                message:"topicId is required"
+            });
+        }
+
+        const topic = await Topic.findOneAndUpdate(
+           { _id:topicId, userId:req.user.id},
+
+            {subjectName,
+            subTopics,
+            difficultyLevel},
+
+            {new:true},
+        )
+
+        if(!topic){
+            return res.status(404).json({
+                message:"Topic not found"
+            })
+        }
+
+        res.status(200).json({
+            success:true, 
+            topic
+        })
+
+
+    } catch (error) {
+         res.status(500).json({ message: error.message });
+    }
+
+}

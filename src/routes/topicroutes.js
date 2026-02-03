@@ -1,9 +1,10 @@
 const express = require("express");
 const topicRouter = express.Router();
 const {userAuth} = require("../middlewares/auth.middleware");
-const {createTopic, getAllTopic} = require("../controllers/topiccontroller")
+const {createTopic, getAllTopic, updateTopic} = require("../controllers/topiccontroller")
 
 topicRouter.post("/topic", userAuth, createTopic);
 topicRouter.get("/getalltopic", userAuth, getAllTopic);
+topicRouter.put("/updatetopic", userAuth, updateTopic);
 
 module.exports= topicRouter;
