@@ -1,29 +1,18 @@
 const mongoose = require("mongoose");
 
-const performanceSchema = new mongoose.Schema(
-    {
-        userId:{
-            type:mongoose.Schema.Types.ObjectId,
-            ref:"User",
-            required:true,
-        },
+const PerformanceSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, required: true },
+  topicId: { type: mongoose.Schema.Types.ObjectId, required: true },
 
-        topicId:{
-            type:mongoose.Schema.Types.ObjectId,
-            ref:"Topic",
-            required:true,
-        },
+  totalQuestions: Number,
+  correctAnswers: Number,
 
-        weakAreas:[String],
-        stringAreas:[String],
+  weakSubTopics: [String],  
+  strongSubTopics: [String],
 
-        suggestedFocus:{
-            type:String
-        }
-    },
-    {
-        timestamps:true,
-    }
-)
+  attemptNumber: { type: Number, default: 1 },
 
-module.exports  = mongoose.model("Performance", performanceSchema)
+  createdAt: { type: Date, default: Date.now }
+});
+
+module.exports = mongoose.model("Performance", PerformanceSchema);
