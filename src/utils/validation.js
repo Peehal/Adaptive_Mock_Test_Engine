@@ -1,26 +1,24 @@
-const validator = require("validator");
+import validator from "validator";
 
-exports.validateSignUp = ({ name, email, password, role }) => {
+export const validateSignUp = ({ name, email, password, role }) => {
+  if (!name || !email || !password || !role) {
+    throw new Error("Enter valid credentials");
+  }
 
-    if (!name || !email || !password || !role) {
-        throw new Error("Enter valid credentials");
-    }
+  if (!validator.isEmail(email)) {
+    throw new Error("Enter valid email ID");
+  }
 
-    if (!validator.isEmail(email)) {
-        throw new Error("Enter valid email ID");
-    }
+  if (!validator.isStrongPassword(password)) {
+    throw new Error("Enter valid password");
+  }
 
-    if (!validator.isStrongPassword(password)) {
-        throw new Error("Enter valid password");
-    }
-
-    if (role !== "student" && role !== "faculty") {
-        throw new Error("Please enter valid role");
-    }
+  if (role !== "student" && role !== "faculty") {
+    throw new Error("Please enter valid role");
+  }
 };
 
-
-exports.validateLogin = ({ email, password }) => {
+export const validateLogin = ({ email, password }) => {
   if (!email || !password) {
     throw new Error("Email and password are required");
   }

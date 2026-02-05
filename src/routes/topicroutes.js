@@ -1,11 +1,17 @@
-const express = require("express");
+import express from "express";
+import { userAuth } from "../middlewares/auth.middleware.js";
+import {
+  createTopic,
+  getAllTopic,
+  updateTopic,
+  deleteTopic,
+} from "../controllers/topiccontroller.js";
+
 const topicRouter = express.Router();
-const {userAuth} = require("../middlewares/auth.middleware");
-const {createTopic, getAllTopic, updateTopic, deleteTopic} = require("../controllers/topiccontroller")
 
 topicRouter.post("/topic", userAuth, createTopic);
 topicRouter.get("/getalltopic", userAuth, getAllTopic);
-topicRouter.put("/updatetopic", userAuth, updateTopic); 
-topicRouter.delete("/deletetopic", userAuth, deleteTopic); 
+topicRouter.put("/updatetopic", userAuth, updateTopic);
+topicRouter.delete("/deletetopic", userAuth, deleteTopic);
 
-module.exports= topicRouter;
+export default topicRouter;

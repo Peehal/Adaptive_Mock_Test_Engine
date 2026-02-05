@@ -1,44 +1,46 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const mockTestSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true
+      required: true,
     },
 
     topicId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Topic",
-      required: true
+      required: true,
     },
 
     totalQuestions: {
       type: Number,
-      required: true
+      required: true,
     },
 
     difficultyProgression: [
       {
         questionNumber: Number,
-        difficulty: String
-      }
+        difficulty: String,
+      },
     ],
 
     startedAt: {
       type: Date,
-      default: Date.now
+      default: Date.now,
     },
 
     completedAt: Date,
 
     finalScore: {
       type: Number,
-      default: 0
-    }
+      default: 0,
+    },
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("MockTest", mockTestSchema);
+const MockTest = mongoose.model("MockTest", mockTestSchema);
+
+export default MockTest;

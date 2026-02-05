@@ -1,45 +1,41 @@
-const express = require("express");
+import express from "express";
+import cookieParser from "cookie-parser";
+import dotenv from "dotenv";
+import events from "events";
+
+import connectDB from "./config/database.js";
+import ollama from "./utils/ollama.js";
+
+// Routers
+import authRouter from "./routes/authroutes.js";
+import profileRouter from "./routes/userrouter.js";
+import topicRouter from "./routes/topicroutes.js";
+import mockTestRouter from "./routes/mocktestroutes.js";
+
+dotenv.config();
+
+events.EventEmitter.defaultMaxListeners = 20;
+
 const app = express();
-const connectDB = require("./config/database");
-const cookieParser = require("cookie-parser");
-require('dotenv').config();
 
-
+// Middleware
 app.use(express.json());
 app.use(cookieParser());
 
-const authRouter = require("./routes/authroutes");
-const getProfile = require("./routes/userrouter");
-const updateProfile = require("./routes/userrouter");
-const updatePassword = require("./routes/userrouter");
-const logout = require("./routes/userrouter");
-const topic = require("./routes/topicroutes");
-const getalltopic =require("./routes/topicroutes");
-const updateTopic =require("./routes/topicroutes");
-const deleteTopic =require("./routes/topicroutes");
-
-
+// Routes (all used exactly as '/')
 app.use("/", authRouter);
-app.use("/", getProfile);
-app.use("/", updateProfile);
-app.use("/", updatePassword);
-app.use("/", logout);
-app.use("/", topic);
-app.use("/", getalltopic);
-app.use("/", updateTopic);
-app.use("/", deleteTopic);
+app.use("/", profileRouter);
+app.use("/", topicRouter);
+app.use("/", mockTestRouter);
 
-
-
+// Connect to DB & start server
 connectDB()
-    .then( () => {
-        console.log("Database has Successfully connected");
-        app.listen(process.env.PORT, () =>{
-            console.log("Server is running Successfully");
-        })
-    })
-    .catch((error) => {
-        console.log("Database is not connected successfully");
+  .then(() => {
+    console.log("Database has successfully connected");
+    app.listen(process.env.PORT, () => {
+      console.log("Server is running successfully on port", process.env.PORT);
     });
-
-    
+  })
+  .catch((error) => {
+    console.error("Database connection failed:", error.message);
+  });

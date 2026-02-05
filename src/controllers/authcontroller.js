@@ -1,85 +1,80 @@
-const User = require("../models/user");
-const {validateSignUp, validateLogin } =require("../utils/validation")
+import User from "../models/user.js";
+import { validateSignUp, validateLogin } from "../utils/validation.js";
 
-exports.signUp =async(req, res) =>{
-    try {
+export const signUp = async (req, res) => {
+  try {
+    validateSignUp(req.body);
 
+    const { name, email, password, role } = req.body;
 
-        validateSignUp(req.body);
+    const existingUser = await User.findOne({ email });
 
-        const {name, email, password, role} = req.body;
-
-        const existingUser = await User.findOne({email});
-
-        if(existingUser)
-            return res.status(400).json({
-                message:"User already exists"
-            });
-
-        const createUser = new User({
-            name, 
-            email, 
-            password,
-            role
-        });
-
-        await createUser.save();
-
-        res.status(201).json({
-            success: true,
-            message:"User registered successfully.Please login",
-        });
-
-    } catch (error) {
-        res.status(400).json({
-            success:false,
-            message: error.message,
-        });
+    if (existingUser) {
+      return res.status(400).json({
+        message: "User already exists",
+      });
     }
+
+    const createUser = new User({
+      name,
+      email,
+      password,
+      role,
+    });
+
+    await createUser.save();
+
+    res.status(201).json({
+      success: true,
+      message: "User registered successfully. Please login",
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
-exports.login = async ( req, res) =>{
+export const login = async (req, res) => {
+  try {
+    validateLogin(req.body);
 
-    try {
+    const { email, password } = req.body;
 
-        validateLogin(req.body);
+    const user = await User.findOne({ email }).select("+password");
 
-        const {email, password} = req.body;
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid credentials",
+      });
+    }
 
-        const user = await User.findOne({email}).select("+password");
+    const validPassword = await user.comparePassword(password);
 
-        if(!user){
-            return res.status(400).json({
-                succes:false,
-                message:"Invalid credentials"
-            })
-        };
+    if (!validPassword) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
+      });
+    }
 
-        const validpassword =await  user.comparePassword(password);
+    const token = await user.getJwt();
 
-        if(!validpassword){
-            return res.status(401).json({
-                succes:false,
-                message:"Invalid credentials"
-            })
-        };
- 
-        const token = await user.getJwt();
-
-        res.cookie("token", token, {
-            httpOnly: true,   
-            sameSite: "strict",
-        });
-
-        return res.status(200).json({
-            success: true,
-            message:"User is successfully logged In"
+    res.cookie("token", token, {
+      httpOnly: true,
+      sameSite: "strict",
     });
-} catch (error) {
-        return res.status(500).json({
-            success:false,
-            message:error.message,
-        });
-    };
 
+    return res.status(200).json({
+      success: true,
+      message: "User is successfully logged in",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };

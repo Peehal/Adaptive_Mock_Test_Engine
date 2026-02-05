@@ -1,30 +1,33 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
-const topicSchema = new mongoose.Schema ({
-
-    userId:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"user",
-        reuired:true
+const topicSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
 
-    subjectName:{
-        type:String,
-        required:true, 
+    subjectName: {
+      type: String,
+      required: true,
     },
 
-    subTopics:{
-        type:[String],
+    subTopics: {
+      type: [String],
     },
 
-    difficultyLevel:{
-        type:String, 
-        enum:["beginner", "intermediate", "advanced"],
-        default:"beginner"
+    difficultyLevel: {
+      type: String,
+      enum: ["beginner", "intermediate", "advanced"],
+      default: "beginner",
     },
+  },
+  {
+    timestamps: true,
+  }
+);
 
-}, {
-    timestamps:true,
-});
+const Topic = mongoose.model("Topic", topicSchema);
 
-module.exports = mongoose.model( "Topic", topicSchema);
+export default Topic;

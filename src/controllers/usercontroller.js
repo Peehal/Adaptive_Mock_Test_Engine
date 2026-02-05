@@ -1,114 +1,105 @@
-const User = require("../models/user");
+import User from "../models/user.js"; // Use import, not require
 
-exports.getProfile = async(req , res ) =>{
-    return res.status(200).json({
-        success:true, 
-        data:{
-            name:req.user.name,
-            email:req.user.email,
-            totalTestGiven:req.user.totalTestGiven,
-            averageScore:req.user.averageScore,
+export const getProfile = async (req, res) => {
+  return res.status(200).json({
+    success: true,
+    data: {
+      name: req.user.name,
+      email: req.user.email,
+      totalTestGiven: req.user.totalTestGiven,
+      averageScore: req.user.averageScore,
 
-            // AI driven Fields
+      // AI-driven Fields
+      strength: req.user.strength || [],
+      weaknesses: req.user.weaknesses || [],
 
-            strength:req.user.strength || [],
-            weaknesses:req.user.weaknesses || [],
-
-            createdAt : req.user.createdAt,
-        },
-    });
+      createdAt: req.user.createdAt,
+    },
+  });
 };
 
-exports.updateProfile = async(req, res) => {
-    try {
-        const allowedFields = ["name", "email"];
+export const updateProfile = async (req, res) => {
+  try {
+    const allowedFields = ["name", "email"];
     const update = {};
 
-    allowedFields.forEach ( field =>{
-        if(req.body[field]){
-            update[field] = req.body[field];
-        }
+    allowedFields.forEach((field) => {
+      if (req.body[field]) {
+        update[field] = req.body[field];
+      }
     });
 
-    const updatedUser = await User.findByIdAndUpdate(
-        req.user._id,
-        update,
-        {
-            new:true,
-            runValidators: true,
-        }
-    );
+    const updatedUser = await User.findByIdAndUpdate(req.user._id, update, {
+      new: true,
+      runValidators: true,
+    });
 
     return res.status(200).json({
-        success: true,
-        message: "Profile updated successfully",
-        data:{
-            name:updatedUser.name,
-            email:updatedUser.email,
-        }
+      success: true,
+      message: "Profile updated successfully",
+      data: {
+        name: updatedUser.name,
+        email: updatedUser.email,
+      },
     });
-    } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: error.message
-        });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const updatePassword = async (req, res) => {
+  try {
+    const { currentpassword, newpassword } = req.body;
+
+    if (!currentpassword || !newpassword) {
+      return res.status(400).json({
+        message: "Both current and new password are required",
+      });
     }
-}
 
-exports.updatePassword = async(req, res) =>{
-    try {
-        const {currentpassword, newpassword} = req.body;
+    const user = await User.findById(req.user._id).select("+password");
 
-        if(!currentpassword || !newpassword){
-            return res.status(400).json({
-                message:"Both current and new password are required",
-            })
-        }
+    const comparePassword = await user.comparePassword(currentpassword);
 
-        const user = await User.findById(req.user._id).select("+password"); //doubt
-
-        const comparePassword = await user.comparePassword(currentpassword);
-
-        if(!comparePassword){
-            return res.status(401).json({
-                message:"Current password is incorrect",
-            })
-        }
-
-        user.password= newpassword;
-            await user.save();
-
-        return res.status(200).json({
-            success: true,
-            message: "Password updated successfully"
-        });
-
-
-    } catch (error) {
-        res.status(400).json({
-            message: error.message
-        });
+    if (!comparePassword) {
+      return res.status(401).json({
+        message: "Current password is incorrect",
+      });
     }
-}
 
-exports.logout = async (req, res) => {
-    try {
-        res.cookie("token", "", {
-            httpOnly: true,
-            expires: new Date(0), // immediately expires
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "strict"
-        });
+    user.password = newpassword;
+    await user.save();
 
-        res.status(200).json({
-            success: true,
-            message: "Logged out successfully"
-        });
+    return res.status(200).json({
+      success: true,
+      message: "Password updated successfully",
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+    });
+  }
+};
 
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
-    }
+export const logout = async (req, res) => {
+  try {
+    res.cookie("token", "", {
+      httpOnly: true,
+      expires: new Date(0), 
+      sameSite: "strict",
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };

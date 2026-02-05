@@ -1,32 +1,28 @@
-const jwt = require("jsonwebtoken");
-const User = require("../models/user");
+import jwt from "jsonwebtoken";
+import User from "../models/user.js";
 
-
-const userAuth = async(req, res , next) =>{
+const userAuth = async (req, res, next) => {
     try {
-        
+        const { token } = req.cookies;
 
-        const {token} = req.cookies;
-
-        if(!token){
+        if (!token) {
             return res.status(401).json({
-                 message: "Not authorized, token missing"
-            })
-        }
-
-        const decodedObj = await jwt.verify(token, process.env.JWT_SECRET);
-
-        const { id} = decodedObj;
-
-        const user = await User.findById( id)
-
-        if(!user){
-            return res.status(401).json({
-                message:"Invalid User"
+                message: "Not authorized, token missing",
             });
         }
 
-        req.user= user;
+        const decodedObj = jwt.verify(token, process.env.JWT_SECRET);
+        const { id } = decodedObj;
+
+        const user = await User.findById(id);
+
+        if (!user) {
+            return res.status(401).json({
+                message: "Invalid User",
+            });
+        }
+
+        req.user = user;
         next();
 
     } catch (error) {
@@ -34,6 +30,6 @@ const userAuth = async(req, res , next) =>{
             message: error.message,
         });
     }
-}
+};
 
-module.exports = {userAuth};
+export { userAuth };
