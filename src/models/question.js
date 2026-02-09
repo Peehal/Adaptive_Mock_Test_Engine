@@ -18,6 +18,11 @@ const questionSchema = new mongoose.Schema(
       required: true,
     },
 
+    subTopic: {
+      type: String,
+      required: true
+    },
+
     correctAnswer: {
       type: String,
       required: true,

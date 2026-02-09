@@ -31,6 +31,11 @@ const mockTestSchema = new mongoose.Schema(
       default: Date.now,
     },
 
+    attemptNumber: {
+      type: Number,
+      default: 1
+    },
+
     completedAt: Date,
 
     finalScore: {
