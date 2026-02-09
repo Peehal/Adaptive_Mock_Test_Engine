@@ -157,13 +157,6 @@ export const submitMockTest = async (req, res) => {
       subTopicStats[subTopic].total++;
         if (isCorrect) subTopicStats[subTopic].correct++;
 
-      // if (!question.subTopic) {
-      //   throw new Error(
-      //     `Question ${question._id} has no subTopic. Data integrity broken.`
-      //   );
-      // }
-
-      // const subTopic = question.subTopic;
 
       if (!subTopicStats[subTopic]) {
         subTopicStats[subTopic] = { correct: 0, total: 0 };
@@ -239,3 +232,71 @@ export const submitMockTest = async (req, res) => {
      res.status(500).json({ message: error.message });
   }
 }
+
+
+
+export const generateAdaptiveMock = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { topicId, questionCount } = req.body;
+
+    if (!topicId || !questionCount) {
+      return res.status(400).json({ message: "Invalid input" });
+    }
+
+    const performance = await Performance.findOne({ userId, topicId });
+
+    if (!performance) {
+      return res.status(404).json({ message: "No performance data found" });
+    }
+
+    const weakCount = Math.floor(questionCount * 0.6);
+    const avgCount = Math.floor(questionCount * 0.3);
+    const strongCount = questionCount - weakCount - avgCount;
+
+    const weakQs = await Question.aggregate([
+      { $match: { topicId, subTopic: { $in: performance.weakSubTopics } } },
+      { $sample: { size: weakCount } }
+    ]);
+
+    const strongQs = await Question.aggregate([
+      { $match: { subTopic: { $in: performance.weakSubTopics } } },
+      { $sample: { size: strongCount } }
+    ]);
+
+    const avgQs = await Question.aggregate([
+      {
+        $match: {
+          topicId,
+          subTopic: {
+            $nin: [...performance.weakSubTopics, ...performance.strongSubTopics]
+          }
+        }
+      },
+      { $sample: { size: avgCount } }
+    ]);
+
+    const questions = [...weakQs, ...avgQs, ...strongQs];
+
+    const mockTest = await MockTest.create({
+      userId,
+      topicId,
+      questions: questions.map(q => q._id),
+      totalQuestions: questions.length,
+      isAdaptive: true
+    });
+
+    res.status(200).json({
+      message: "Adaptive mock generated",
+      mockTestId: mockTest._id,
+      distribution: {
+        weak: weakQs.length,
+        average: avgQs.length,
+        strong: strongQs.length
+      }
+    });
+
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
