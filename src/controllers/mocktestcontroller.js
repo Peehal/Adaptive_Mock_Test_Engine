@@ -57,16 +57,6 @@ export const generateMocktest = async (req, res) => {
     // Call LLM
     const response = await ollama.invoke(prompt);
 
-    // let questions;
-    // try {
-    //   questions = JSON.parse(response.content.trim());
-    // } catch {
-    //   return res.status(500).json({
-    //     message: "Invalid JSON from LLM",
-    //     raw: response.content,
-    //   });
-    // }
-
     let questions;
     try {
         const cleaned = response.content
@@ -97,11 +87,16 @@ export const generateMocktest = async (req, res) => {
     });
 
     await Question.insertMany(
-      questions.map((q) => ({
-        ...q,
-        mockTestId: mockTest._id,
-      }))
-    );
+  questions.map((q) => ({
+    questionText: q.questionText,
+    options: q.options,
+    correctAnswer: q.correctAnswer,
+    difficulty: q.difficulty,
+    subTopic: q.subTopic?.trim(), // FORCE SAVE
+    mockTestId: mockTest._id,
+  }))
+);
+
 
     res.status(201).json({
       message: isFirstAttempt
