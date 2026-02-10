@@ -6,7 +6,7 @@ import events from "events";
 import connectDB from "./config/database.js";
 import ollama from "./utils/ollama.js";
 
-
+import performanceRouter from "./routes/performanceroutes.js";
 import authRouter from "./routes/authroutes.js";
 import profileRouter from "./routes/userrouter.js";
 import topicRouter from "./routes/topicroutes.js";
@@ -27,6 +27,7 @@ app.use("/", authRouter);
 app.use("/", profileRouter);
 app.use("/", topicRouter);
 app.use("/", mockTestRouter);
+app.use("/", performanceRouter);
 
 connectDB()
   .then(() => {
