@@ -234,50 +234,76 @@ export const submitMockTest = async (req, res) => {
 }
 
 
-
 export const generateAdaptiveMock = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { topicId, questionCount } = req.body;
+    const { topicId, questionCount = 10 } = req.body;
 
-    if (!topicId || !questionCount) {
-      return res.status(400).json({ message: "Invalid input" });
+    if (!topicId) {
+      return res.status(400).json({ message: "topicId is required" });
     }
 
     const performance = await Performance.findOne({ userId, topicId });
 
-    if (!performance) {
-      return res.status(404).json({ message: "No performance data found" });
+    const weakSubTopics = performance?.weakSubTopics || [];
+    const strongSubTopics = performance?.strongSubTopics || [];
+
+    const previousMocks = await MockTest.find({ topicId });
+
+    if (previousMocks.length === 0) {
+      return res.status(400).json({
+        message: "No previous mock tests found for this topic"
+      });
+    }
+
+    const mockIds = previousMocks.map(m => m._id);
+
+    const allQuestions = await Question.find({
+      mockTestId: { $in: mockIds }
+    });
+
+    if (allQuestions.length === 0) {
+      return res.status(400).json({
+        message: "No questions exist for this topic"
+      });
     }
 
     const weakCount = Math.floor(questionCount * 0.6);
     const avgCount = Math.floor(questionCount * 0.3);
     const strongCount = questionCount - weakCount - avgCount;
 
-    const weakQs = await Question.aggregate([
-      { $match: { topicId, subTopic: { $in: performance.weakSubTopics } } },
-      { $sample: { size: weakCount } }
-    ]);
+    const shuffle = arr => arr.sort(() => 0.5 - Math.random());
 
-    const strongQs = await Question.aggregate([
-      { $match: { subTopic: { $in: performance.weakSubTopics } } },
-      { $sample: { size: strongCount } }
-    ]);
+    const weakQs = shuffle(
+      allQuestions.filter(q => weakSubTopics.includes(q.subTopic))
+    ).slice(0, weakCount);
 
-    const avgQs = await Question.aggregate([
-      {
-        $match: {
-          topicId,
-          subTopic: {
-            $nin: [...performance.weakSubTopics, ...performance.strongSubTopics]
-          }
-        }
-      },
-      { $sample: { size: avgCount } }
-    ]);
+    const strongQs = shuffle(
+      allQuestions.filter(q => strongSubTopics.includes(q.subTopic))
+    ).slice(0, strongCount);
 
-    const questions = [...weakQs, ...avgQs, ...strongQs];
+    const avgQs = shuffle(
+      allQuestions.filter(
+        q =>
+          !weakSubTopics.includes(q.subTopic) &&
+          !strongSubTopics.includes(q.subTopic)
+      )
+    ).slice(0, avgCount);
 
+    let questions = [...weakQs, ...avgQs, ...strongQs];
+
+    // 5️⃣ Fallback fill
+    if (questions.length < questionCount) {
+      const remaining = questionCount - questions.length;
+
+      const extra = shuffle(
+        allQuestions.filter(q => !questions.includes(q))
+      ).slice(0, remaining);
+
+      questions.push(...extra);
+    }
+
+    // 6️⃣ Create adaptive mock
     const mockTest = await MockTest.create({
       userId,
       topicId,
@@ -289,11 +315,7 @@ export const generateAdaptiveMock = async (req, res) => {
     res.status(200).json({
       message: "Adaptive mock generated",
       mockTestId: mockTest._id,
-      distribution: {
-        weak: weakQs.length,
-        average: avgQs.length,
-        strong: strongQs.length
-      }
+      totalQuestions: questions.length
     });
 
   } catch (err) {
